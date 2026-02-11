@@ -9,7 +9,7 @@ Follow the steps below to set up and run the application:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/GURPREETKAURJETHRA/AI-Data-Visualization-Agent.git
+   git clone https://github.com/Charan-Hari/Data-Visualitzation-AI.git 
    cd AI-Data-Visualization-Agent
 
    ```
