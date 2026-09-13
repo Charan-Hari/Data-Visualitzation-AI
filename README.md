@@ -4,6 +4,15 @@ Turn a CSV into a clear data story. Vizly is a Streamlit app that interprets
 natural-language questions and generates useful analyses and visualizations
 with Together AI and E2B.
 
+## Project showcase
+
+Visit the GitHub Pages landing page:
+**https://charan-hari.github.io/Data-Visualitzation-AI/**
+
+GitHub Pages hosts the project showcase. The interactive AI dashboard runs
+locally or on Streamlit Community Cloud because GitHub Pages cannot execute
+Python or Streamlit applications.
+
 ## How to Run
 
 Follow the steps below to set up and run the application:
@@ -17,7 +26,7 @@ Follow the steps below to set up and run the application:
    ```
 2. **Install the dependencies**
     ```bash
-    pip install streamlit pandas pillow together e2b-code-interpreter
+    pip install -r requirements.txt
     ```
 3. **Run the Streamlit app**
     ```bash

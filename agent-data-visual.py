@@ -103,8 +103,9 @@ def apply_theme() -> None:
         :root {
             --ink: #172033;
             --muted: #63708a;
-            --purple: #7657f6;
-            --purple-dark: #4e35c5;
+            --teal: #0c8b83;
+            --teal-dark: #08635e;
+            --coral: #ed765f;
             --surface: #ffffff;
             --line: #e8eaf2;
         }
@@ -129,16 +130,16 @@ def apply_theme() -> None:
         .hero {
             padding: 2.2rem 2.5rem 2rem;
             border-radius: 28px;
-            background: radial-gradient(circle at 90% 10%, #9b8bff 0, transparent 35%),
-                        linear-gradient(115deg, #201558 0%, #4e35c5 52%, #7657f6 100%);
-            box-shadow: 0 18px 45px rgba(78, 53, 197, .22);
+            background: radial-gradient(circle at 90% 10%, #59c9c0 0, transparent 35%),
+                        linear-gradient(115deg, #12333d 0%, #126c6a 55%, #0c8b83 100%);
+            box-shadow: 0 18px 45px rgba(12, 139, 131, .2);
             color: white;
             margin-bottom: 1.5rem;
         }
         .hero h1 { color: white; font-size: 2.8rem; margin: .35rem 0 .5rem; }
         .hero p { color: #e4e0ff; font-size: 1.08rem; max-width: 680px; margin: 0; }
         .eyebrow {
-            color: #c9c0ff; font-size: .76rem; font-weight: 700;
+            color: #c4f2ec; font-size: .76rem; font-weight: 700;
             letter-spacing: .14em; text-transform: uppercase;
         }
         .section-title { margin: 1.3rem 0 .2rem; }
@@ -151,17 +152,17 @@ def apply_theme() -> None:
         .metric-label { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
         .metric-value { color: var(--ink); font-family: 'Space Grotesk'; font-size: 1.45rem; font-weight: 700; margin-top: .25rem; }
         .tip-card {
-            background: #f0edff; border: 1px solid #ddd7ff; border-radius: 14px;
-            padding: .9rem 1rem; color: #44368d; font-size: .9rem;
+            background: #e8f7f4; border: 1px solid #c7eae4; border-radius: 14px;
+            padding: .9rem 1rem; color: #155d5a; font-size: .9rem;
         }
         .stButton > button {
-            background: linear-gradient(100deg, var(--purple-dark), var(--purple));
+            background: linear-gradient(100deg, var(--teal-dark), var(--teal));
             color: white; border: 0; border-radius: 10px; font-weight: 700;
-            padding: .65rem 1.2rem; box-shadow: 0 8px 16px rgba(78, 53, 197, .18);
+            padding: .65rem 1.2rem; box-shadow: 0 8px 16px rgba(12, 139, 131, .18);
         }
         .stButton > button:hover { color: white; border: 0; filter: brightness(1.06); }
         [data-testid="stFileUploader"] {
-            background: rgba(255,255,255,.75); border: 1px dashed #bcb8d9;
+            background: rgba(255,255,255,.75); border: 1px dashed #9bc9c5;
             border-radius: 16px; padding: .5rem;
         }
         </style>
@@ -189,6 +190,59 @@ def render_metric(label: str, value: str) -> None:
         f'<div class="metric-value">{value}</div></div>',
         unsafe_allow_html=True,
     )
+
+
+def render_dataset_explorer(df: pd.DataFrame) -> None:
+    """Show useful local insights before the user spends an AI request."""
+    numeric_columns = list(df.select_dtypes(include="number").columns)
+    categorical_columns = list(df.select_dtypes(include=["object", "category", "bool"]).columns)
+
+    st.markdown('<h2 class="section-title">Explore your data</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-subtitle">A quick visual health check, available instantly and without an API call.</div>',
+        unsafe_allow_html=True,
+    )
+    overview_tab, columns_tab, chart_tab = st.tabs(["✨ Overview", "🔎 Column profile", "📊 Quick chart"])
+
+    with overview_tab:
+        overview_columns = st.columns(3)
+        with overview_columns[0]:
+            render_metric("Complete cells", f"{int(df.notna().sum().sum()):,}")
+        with overview_columns[1]:
+            render_metric("Unique values", f"{int(df.nunique().sum()):,}")
+        with overview_columns[2]:
+            render_metric("Duplicate rows", f"{int(df.duplicated().sum()):,}")
+        if numeric_columns:
+            selected_numeric = st.selectbox("Numeric field", numeric_columns, key="overview_numeric")
+            st.line_chart(df[selected_numeric].reset_index(drop=True), color="#0c8b83")
+        else:
+            st.info("Upload a dataset with numeric fields to see a trend preview.")
+
+    with columns_tab:
+        profile = pd.DataFrame({
+            "Field": df.columns,
+            "Type": [str(df[column].dtype) for column in df.columns],
+            "Filled": [f"{int(df[column].notna().sum() / len(df) * 100)}%" for column in df.columns],
+            "Unique": [int(df[column].nunique()) for column in df.columns],
+        })
+        st.dataframe(profile, use_container_width=True, hide_index=True)
+
+    with chart_tab:
+        if categorical_columns and numeric_columns:
+            category = st.selectbox("Group by", categorical_columns, key="chart_category")
+            measure = st.selectbox("Measure", numeric_columns, key="chart_measure")
+            grouped = (
+                df.groupby(category, dropna=False)[measure]
+                .mean()
+                .sort_values(ascending=False)
+                .head(10)
+            )
+            st.bar_chart(grouped, color="#ed765f")
+            st.caption(f"Showing the top 10 {category} groups by average {measure}.")
+        elif numeric_columns:
+            st.area_chart(df[numeric_columns].head(100), color="#0c8b83")
+        else:
+            st.info("Add at least one numeric field to create a quick chart.")
 
 
 def main():
@@ -250,6 +304,7 @@ def main():
             st.dataframe(df.head(8), use_container_width=True, hide_index=True)
             st.caption(f"Showing the first 8 rows of {len(df):,}.")
 
+        render_dataset_explorer(df)
         st.markdown('<h2 class="section-title">2. Ask your question</h2>', unsafe_allow_html=True)
         st.markdown('<div class="section-subtitle">Describe the comparison, trend, or outlier you want to understand.</div>', unsafe_allow_html=True)
         st.markdown('<div class="tip-card">✨ Try: “Show the top 5 categories by average cost” or “What trend do you see over time?”</div>', unsafe_allow_html=True)
