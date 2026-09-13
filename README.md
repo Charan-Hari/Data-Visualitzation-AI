@@ -6,6 +6,10 @@ with Together AI and E2B.
 
 > Upload your data. Ask a question. Discover the story.
 
+## Topics
+
+`python` `streamlit` `data-visualization` `data-analysis` `generative-ai`
+`llm` `pandas` `together-ai` `e2b` `ai-agent`
 
 ## Why Vizly?
 
@@ -18,7 +22,8 @@ Choose from 12 included sample datasets or upload your own CSV.
 ## Features
 
 - Upload and preview CSV datasets
-- View rows, columns, numeric fields, missing values, duplicates, and unique values
+- Get an automatic summary of trends, leaders, outliers, and data-quality issues
+- See suggested follow-up questions based on the dataset
 - Profile every column by type, completeness, and cardinality
 - Generate instant trend, area, and grouped bar charts
 - Ask natural-language questions about the dataset
@@ -84,12 +89,12 @@ Follow the steps below to set up and run the application:
    Enter your Together AI and E2B keys in the app sidebar. Keys are kept in
    Streamlit session state and are not written to the repository.
 
-## GitHub Pages troubleshooting
+## GitHub Pages setup
 
-The first Pages deployment may require one manual setting. Open
-**Settings → Pages**, choose **GitHub Actions** under **Build and deployment**,
-save, and re-run the **Deploy GitHub Pages** workflow. The site will then be
-available at:
+GitHub does not allow the default workflow token to create the Pages site.
+Before the first deployment, open **Settings → Pages**, choose **GitHub
+Actions** under **Build and deployment**, and save. Then re-run the **Deploy
+GitHub Pages** workflow. The site will be available at:
 
 `https://charan-hari.github.io/Data-Visualitzation-AI/`
 

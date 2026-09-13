@@ -199,14 +199,6 @@ def render_hero() -> None:
     )
 
 
-def render_metric(label: str, value: str) -> None:
-    st.markdown(
-        f'<div class="metric-card"><div class="metric-label">{label}</div>'
-        f'<div class="metric-value">{value}</div></div>',
-        unsafe_allow_html=True,
-    )
-
-
 def apply_data_filters(df: pd.DataFrame) -> pd.DataFrame:
     """Apply lightweight filters so users can explore before using AI."""
     filtered_df = df.copy()
@@ -250,6 +242,130 @@ def apply_data_filters(df: pd.DataFrame) -> pd.DataFrame:
     return filtered_df
 
 
+def choose_measure(df: pd.DataFrame) -> Optional[str]:
+    """Choose a human-readable measure for automatic insight generation."""
+    numeric_columns = list(df.select_dtypes(include="number").columns)
+    if not numeric_columns:
+        return None
+    preferred_terms = ("revenue", "sales", "amount", "value", "price", "score", "rating")
+    return next(
+        (column for column in numeric_columns if any(term in column.lower() for term in preferred_terms)),
+        numeric_columns[0],
+    )
+
+
+def find_date_column(df: pd.DataFrame) -> Optional[str]:
+    """Find a column that can reliably represent time."""
+    for column in df.columns:
+        if "date" in column.lower() or "time" in column.lower() or "month" in column.lower():
+            parsed = pd.to_datetime(df[column], errors="coerce", format="mixed")
+            if parsed.notna().mean() >= 0.7:
+                return column
+    return None
+
+
+def build_insights(df: pd.DataFrame) -> List[Tuple[str, str, str]]:
+    """Create explainable, deterministic findings without requiring an API call."""
+    insights: List[Tuple[str, str, str]] = []
+    measure = choose_measure(df)
+    date_column = find_date_column(df)
+    categorical_columns = list(df.select_dtypes(include=["object", "category", "bool"]).columns)
+
+    if measure:
+        values = pd.to_numeric(df[measure], errors="coerce").dropna()
+        if len(values) >= 4:
+            first_value = values.iloc[0]
+            last_value = values.iloc[-1]
+            if first_value != 0:
+                change = ((last_value - first_value) / abs(first_value)) * 100
+                direction = "increased" if change >= 0 else "decreased"
+                insights.append((
+                    "Trend",
+                    f"{measure.replace('_', ' ').title()} {direction} {abs(change):.1f}% "
+                    "from the first observed value to the latest.",
+                    "trend",
+                ))
+
+        first_quartile = values.quantile(0.25)
+        third_quartile = values.quantile(0.75)
+        spread = third_quartile - first_quartile
+        if spread > 0:
+            outlier_count = int(((values < first_quartile - 1.5 * spread) |
+                                 (values > third_quartile + 1.5 * spread)).sum())
+            if outlier_count:
+                insights.append((
+                    "Potential outliers",
+                    f"{outlier_count} value(s) in {measure.replace('_', ' ')} sit well "
+                    "outside the usual range and may need investigation.",
+                    "outlier",
+                ))
+
+    if categorical_columns and measure:
+        category = categorical_columns[0]
+        grouped = (
+            df.groupby(category, dropna=False)[measure]
+            .mean()
+            .dropna()
+            .sort_values(ascending=False)
+        )
+        if len(grouped) >= 2:
+            top_name = str(grouped.index[0])
+            bottom_name = str(grouped.index[-1])
+            insights.append((
+                "Top and bottom performer",
+                f"{top_name} leads average {measure.replace('_', ' ')} at "
+                f"{grouped.iloc[0]:,.2f}; {bottom_name} is lowest at {grouped.iloc[-1]:,.2f}.",
+                "comparison",
+            ))
+
+    missing = df.isna().sum()
+    missing = missing[missing > 0].sort_values(ascending=False)
+    if not missing.empty:
+        insights.append((
+            "Data quality",
+            f"{missing.index[0]} has {int(missing.iloc[0])} missing value(s). "
+            "Fill or exclude them before making decisions.",
+            "quality",
+        ))
+    elif df.duplicated().sum() > 0:
+        insights.append((
+            "Data quality",
+            f"{int(df.duplicated().sum())} duplicate row(s) were found and may inflate totals.",
+            "quality",
+        ))
+
+    if date_column and measure:
+        insights.append((
+            "Next question",
+            f"Ask: “What changed in {measure.replace('_', ' ')} over {date_column.replace('_', ' ')}?”",
+            "question",
+        ))
+    return insights[:4]
+
+
+def render_insight_summary(df: pd.DataFrame) -> None:
+    """Render the meaningful first view of the dataset."""
+    insights = build_insights(df)
+    st.markdown('<h2 class="section-title">What stands out</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-subtitle">A quick, explainable read of the patterns in your filtered data.</div>',
+        unsafe_allow_html=True,
+    )
+    if not insights:
+        st.info("Ask Vizly a question to discover patterns in this dataset.")
+        return
+
+    insight_columns = st.columns(min(len(insights), 2))
+    for index, (title, detail, kind) in enumerate(insights):
+        with insight_columns[index % len(insight_columns)]:
+            if kind == "quality":
+                st.warning(f"**{title}**\n\n{detail}")
+            elif kind == "question":
+                st.info(f"**{title}**\n\n{detail}")
+            else:
+                st.success(f"**{title}**\n\n{detail}")
+
+
 def render_dataset_explorer(df: pd.DataFrame) -> None:
     """Show useful local insights before the user spends an AI request."""
     numeric_columns = list(df.select_dtypes(include="number").columns)
@@ -263,15 +379,8 @@ def render_dataset_explorer(df: pd.DataFrame) -> None:
     overview_tab, columns_tab, chart_tab = st.tabs(["✨ Overview", "🔎 Column profile", "📊 Quick chart"])
 
     with overview_tab:
-        overview_columns = st.columns(3)
-        with overview_columns[0]:
-            render_metric("Complete cells", f"{int(df.notna().sum().sum()):,}")
-        with overview_columns[1]:
-            render_metric("Unique values", f"{int(df.nunique().sum()):,}")
-        with overview_columns[2]:
-            render_metric("Duplicate rows", f"{int(df.duplicated().sum()):,}")
         if numeric_columns:
-            selected_numeric = st.selectbox("Numeric field", numeric_columns, key="overview_numeric")
+            selected_numeric = st.selectbox("Choose a measure to explore", numeric_columns, key="overview_numeric")
             st.line_chart(df[selected_numeric].reset_index(drop=True), color="#0c8b83")
         else:
             st.info("Upload a dataset with numeric fields to see a trend preview.")
@@ -374,15 +483,7 @@ def main():
             st.warning("No rows match the selected filters. Adjust the filters to continue.")
             return
         st.markdown(f"### 📄 {source_filename}")
-        metric_columns = st.columns(4)
-        with metric_columns[0]:
-            render_metric("Rows", f"{len(df):,}")
-        with metric_columns[1]:
-            render_metric("Columns", f"{len(df.columns):,}")
-        with metric_columns[2]:
-            render_metric("Numeric fields", f"{len(df.select_dtypes(include='number').columns):,}")
-        with metric_columns[3]:
-            render_metric("Missing values", f"{int(df.isna().sum().sum()):,}")
+        render_insight_summary(df)
 
         with st.expander("Preview your dataset", expanded=True):
             st.dataframe(df.head(8), use_container_width=True, hide_index=True)
