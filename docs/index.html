@@ -24,8 +24,8 @@
     button { width:100%; border:0; border-radius:9px; padding:11px 13px; background:var(--teal); color:#fff; cursor:pointer; font-weight:800; margin-top:12px; }
     button:hover { background:var(--teal-dark); } button.secondary { background:#e8f7f4; color:#155d5a; }
     .content { display:grid; gap:20px; }
-    .hero { background:linear-gradient(120deg,var(--teal-dark),#126c6a 60%,var(--teal)); color:#fff; border-radius:22px; padding:28px 32px; }
-    .hero h1 { color:#fff; margin:3px 0 8px; } .hero p { color:#d9f6f2; margin:0; max-width:720px; }
+    .hero { background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px 24px; }
+    .hero h1 { color:var(--ink); font-size:1.75rem; margin:3px 0 4px; } .hero p { margin:0; max-width:720px; }
     .panel { padding:22px; } .panel-head { display:flex; justify-content:space-between; gap:12px; align-items:start; margin-bottom:16px; }
     .status { color:var(--teal-dark); background:#e8f7f4; border-radius:999px; padding:5px 10px; font-size:.75rem; font-weight:800; white-space:nowrap; }
     .insights { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
@@ -52,26 +52,28 @@
       <aside>
         <div class="eyebrow">Try it now</div>
         <h2>Data source</h2>
-        <p>Choose a sample or upload your own CSV.</p>
+        <p>Choose a sample or upload a CSV/JSON file.</p>
         <label for="sample">Sample dataset</label>
         <select id="sample"></select>
         <label for="upload">Or upload CSV</label>
-        <input id="upload" type="file" accept=".csv,text/csv">
+        <input id="upload" type="file" accept=".csv,.json,text/csv,application/json">
         <label for="group">Group by</label>
         <select id="group"></select>
         <label for="measure">Measure</label>
         <select id="measure"></select>
+        <label for="chartType">Visualization</label>
+        <select id="chartType"><option value="auto">Recommended</option><option value="bar">Bar chart</option><option value="line">Line chart</option><option value="scatter">Scatter plot</option><option value="histogram">Histogram</option><option value="table">Table</option></select>
         <button id="refresh">Update insights</button>
         <button class="secondary" id="reset">Reset sample</button>
       </aside>
       <main class="content">
-        <section class="hero"><div class="eyebrow" style="color:#c4f2ec">Interactive data explorer</div><h1>Find what matters in your data.</h1><p>Change the dataset, filter dimensions, and ask a question. This demo runs entirely in your browser.</p></section>
+        <section class="hero"><div class="eyebrow">Vizly workspace</div><h1 id="workspaceTitle">Explore your data</h1><p id="workspaceSubtitle">A recommended view will appear based on the fields in your dataset.</p></section>
         <section class="panel">
           <div class="panel-head"><div><h2>What stands out</h2><p>Explainable findings from the current data selection.</p></div><span class="status" id="status">Sample loaded</span></div>
           <div class="insights" id="insights"></div>
         </section>
         <section class="panel">
-          <div class="panel-head"><div><h2 id="chartTitle">Average value by category</h2><p>Use the controls to change the story.</p></div></div>
+          <div class="panel-head"><div><h2 id="chartTitle">Recommended visualization</h2><p id="chartReason">Detecting the best view from your data.</p></div></div>
           <div class="chart-wrap"><div class="chart" id="chart"></div><div class="question"><h3>Ask about this data</h3><p>Try a natural-language question.</p><input id="question" type="text" value="Which group performs best?"><button id="ask">Ask Vizly</button><div class="answer" id="answer"></div></div></div>
         </section>
         <section class="panel"><div class="panel-head"><div><h2>Data preview</h2><p id="previewText"></p></div></div><div class="table-wrap" id="table"></div></section>
@@ -88,22 +90,40 @@
     };
     let rows = samples["Sales performance"].slice(1).map(r => Object.fromEntries(samples["Sales performance"][0].map((h,i)=>[h,r[i]])));
     let headers = Object.keys(rows[0]);
+    let recommendedType = "bar";
     const $ = id => document.getElementById(id);
     function parseCSV(text) { const lines=text.trim().split(/\r?\n/).map(x=>x.split(",").map(v=>v.trim().replace(/^"|"$/g,""))); return lines.length > 1 ? {headers:lines[0], rows:lines.slice(1).map(r=>Object.fromEntries(lines[0].map((h,i)=>[h,r[i]||""])))} : null; }
+    function parseJSON(text) { const data=JSON.parse(text); const list=Array.isArray(data)?data:(Array.isArray(data.data)?data.data:[]); if(!list.length||typeof list[0]!=="object") return null; const keys=[...new Set(list.flatMap(item=>Object.keys(item)))]; return {headers:keys, rows:list.map(item=>Object.fromEntries(keys.map(key=>[key,item[key]??""])))}; }
     function numeric(h) { return rows.some(r => r[h] !== "" && !isNaN(Number(r[h]))); }
+    function dateColumn() { return headers.find(h => { const valid=rows.filter(r => r[h] && !Number.isNaN(Date.parse(r[h]))).length; return /date|time|month|year/i.test(h) && valid >= rows.length * .7; }); }
+    function chartRecommendation() {
+      const numericHeaders=headers.filter(numeric), date=dateColumn(), categorical=headers.filter(h=>!numeric(h));
+      if (date && numericHeaders.length) return {type:"line", reason:`${date} and a numeric measure suggest a time-series view.`};
+      if (categorical.length && numericHeaders.length) return {type:"bar", reason:"A category and measure suggest a comparison view."};
+      if (numericHeaders.length >= 2) return {type:"scatter", reason:"Two numeric measures suggest a relationship view."};
+      if (numericHeaders.length === 1) return {type:"histogram", reason:"A single numeric measure suggests a distribution view."};
+      return {type:"table", reason:"This dataset is primarily categorical, so a table is the clearest view."};
+    }
     function populate() {
       headers = Object.keys(rows[0]||{});
       $("group").innerHTML = headers.filter(h=>!numeric(h)).map(h=>`<option>${h}</option>`).join("");
       $("measure").innerHTML = headers.filter(numeric).map(h=>`<option>${h}</option>`).join("");
+      const recommendation=chartRecommendation(); recommendedType=recommendation.type;
+      $("chartReason").textContent=recommendation.reason;
+      $("workspaceSubtitle").textContent=`${recommendation.reason} Change the visualization when you want a different perspective.`;
       render();
     }
     function render() {
-      const group=$("group").value, measure=$("measure").value; if(!group||!measure) return;
-      const grouped={}; rows.forEach(r=>{ const key=r[group]||"Unknown"; grouped[key]??=[]; grouped[key].push(Number(r[measure])||0); });
+      const group=$("group").value, measure=$("measure").value, type=$("chartType").value==="auto"?recommendedType:$("chartType").value; if(!measure) return;
+      const grouped={}; if(group) rows.forEach(r=>{ const key=r[group]||"Unknown"; grouped[key]??=[]; grouped[key].push(Number(r[measure])||0); });
       const values=Object.entries(grouped).map(([key,vals])=>[key,vals.reduce((a,b)=>a+b,0)/vals.length]).sort((a,b)=>b[1]-a[1]);
-      const max=Math.max(...values.map(v=>v[1]),1); $("chartTitle").textContent=`Average ${measure.replaceAll("_"," ")} by ${group.replaceAll("_"," ")}`;
-      $("chart").innerHTML=values.map(([key,value])=>`<div class="bar-item"><div class="bar" style="height:${Math.max(value/max*92,3)}%"></div><div class="bar-label" title="${key}">${key}</div></div>`).join("");
-      const top=values[0], bottom=values[values.length-1], all=rows.map(r=>Number(r[measure])||0), avg=all.reduce((a,b)=>a+b,0)/all.length;
+      const all=rows.map(r=>Number(r[measure])||0), max=Math.max(...all,1), min=Math.min(...all,0);
+      if(type==="bar") { $("chartTitle").textContent=`Average ${measure.replaceAll("_"," ")} by ${group||"group"}`; $("chart").innerHTML=values.map(([key,value])=>`<div class="bar-item"><div class="bar" style="height:${Math.max(value/Math.max(...values.map(v=>v[1]),1)*92,3)}%"></div><div class="bar-label" title="${key}">${key}</div></div>`).join(""); }
+      else if(type==="histogram") { $("chartTitle").textContent=`Distribution of ${measure.replaceAll("_"," ")}`; const bins=Array(6).fill(0); all.forEach(v=>bins[Math.min(5,Math.floor((v-min)/Math.max(1,max-min)*6))]++); const peak=Math.max(...bins,1); $("chart").innerHTML=bins.map((v,i)=>`<div class="bar-item"><div class="bar" style="height:${Math.max(v/peak*92,3)}%"></div><div class="bar-label">${i+1}</div></div>`).join(""); }
+      else if(type==="scatter") { $("chartTitle").textContent=`Relationship with ${measure.replaceAll("_"," ")}`; const other=headers.filter(h=>numeric(h)&&h!==measure)[0]; const x=rows.map(r=>Number(r[other])||0), y=all, xr=Math.max(...x,1), yr=Math.max(...y,1); $("chart").innerHTML=`<svg viewBox="0 0 600 250" style="width:100%;height:100%">${rows.map((r,i)=>`<circle cx="${(x[i]/xr*550)+25}" cy="${235-(y[i]/yr*215)}" r="6" fill="#ed765f" opacity=".8"/>`).join("")}</svg>`; }
+      else if(type==="line") { $("chartTitle").textContent=`${measure.replaceAll("_"," ")} over time`; const points=all.map((v,i)=>`${25+i*Math.max(550/(all.length-1),1)},${235-(v/max*215)}`).join(" "); $("chart").innerHTML=`<svg viewBox="0 0 600 250" style="width:100%;height:100%"><polyline points="${points}" fill="none" stroke="#0c8b83" stroke-width="5"/>${all.map((v,i)=>`<circle cx="${25+i*Math.max(550/(all.length-1),1)}" cy="${235-(v/max*215)}" r="5" fill="#ed765f"/>`).join("")}</svg>`; }
+      else { $("chartTitle").textContent="Data table"; $("chart").innerHTML=`<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.slice(0,8).map(r=>`<tr>${headers.map(h=>`<td>${r[h]}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`; }
+      const top=values[0]||["group",0], bottom=values[values.length-1]||["group",0], avg=all.reduce((a,b)=>a+b,0)/Math.max(all.length,1);
       const missing=headers.filter(h=>rows.some(r=>r[h]===""))[0];
       $("insights").innerHTML=`<div class="insight"><strong>Leading group</strong><span>${top[0]} has the highest average ${measure.replaceAll("_"," ")} (${top[1].toLocaleString(undefined,{maximumFractionDigits:1})}).</span></div><div class="insight"><strong>Needs attention</strong><span>${bottom[0]} is the lowest-performing group and may deserve a closer look.</span></div><div class="insight ${missing?"warning":""}"><strong>${missing?"Data quality":"Overall signal"}</strong><span>${missing?`Some ${missing} values are missing.`:`The overall average ${measure.replaceAll("_"," ")} is ${avg.toLocaleString(undefined,{maximumFractionDigits:1})}.`}</span></div>`;
       $("previewText").textContent=`Showing ${rows.length} rows from the current selection.`;
@@ -112,8 +132,8 @@
     }
     $("sample").innerHTML=Object.keys(samples).map(name=>`<option>${name}</option>`).join("");
     $("sample").addEventListener("change",e=>{ const data=samples[e.target.value]; rows=data.slice(1).map(r=>Object.fromEntries(data[0].map((h,i)=>[h,r[i]]))); populate(); });
-    $("upload").addEventListener("change",e=>{ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=event=>{const parsed=parseCSV(event.target.result); if(parsed){rows=parsed.rows; populate(); $("status").textContent="Uploaded CSV";}}; reader.readAsText(file); });
-    $("group").addEventListener("change",render); $("measure").addEventListener("change",render); $("refresh").addEventListener("click",render);
+    $("upload").addEventListener("change",e=>{ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=event=>{try { const parsed=file.name.toLowerCase().endsWith(".json")?parseJSON(event.target.result):parseCSV(event.target.result); if(parsed){rows=parsed.rows; populate(); $("status").textContent=`Uploaded ${file.name}`;} } catch(error) { $("status").textContent="Could not read this file"; }}; reader.readAsText(file); });
+    $("group").addEventListener("change",render); $("measure").addEventListener("change",render); $("chartType").addEventListener("change",render); $("refresh").addEventListener("click",render);
     $("reset").addEventListener("click",()=>{ $("sample").value="Sales performance"; rows=samples["Sales performance"].slice(1).map(r=>Object.fromEntries(samples["Sales performance"][0].map((h,i)=>[h,r[i]]))); populate(); });
     $("ask").addEventListener("click",()=>{ const q=$("question").value.toLowerCase(), answer=$("answer"); const group=$("group").value, measure=$("measure").value; const values=[...$("chart").querySelectorAll(".bar-label")].map(x=>x.textContent); let text=q.includes("why")?`The strongest visible difference is between ${values[0]} and ${values[values.length-1]}. Compare their underlying records to understand the drivers.`:q.includes("trend")?`This preview is grouped by ${group}. For a time-based answer, upload a dataset with a date field and ask Vizly to analyze the change over time.`:`${values[0]} currently leads by average ${measure.replaceAll("_"," ")}. Try asking “Why does it lead?” for a deeper analysis.`; answer.textContent=text; answer.style.display="block"; });
     populate();
