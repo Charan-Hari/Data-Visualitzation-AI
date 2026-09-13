@@ -4,6 +4,29 @@ Turn a CSV into a clear data story. Vizly is a Streamlit app that interprets
 natural-language questions and generates useful analyses and visualizations
 with Together AI and E2B.
 
+> Upload your data. Ask a question. Discover the story.
+
+## Topics
+
+`python` `streamlit` `data-visualization` `data-analysis` `generative-ai`
+`llm` `pandas` `together-ai` `e2b` `ai-agent`
+
+## Why Vizly?
+
+Vizly helps people explore unfamiliar datasets without writing analysis code.
+It combines instant local profiling with AI-generated explanations and charts,
+so users can understand the shape of their data before asking deeper questions.
+
+## Features
+
+- Upload and preview CSV datasets
+- View rows, columns, numeric fields, missing values, duplicates, and unique values
+- Profile every column by type, completeness, and cardinality
+- Generate instant trend, area, and grouped bar charts
+- Ask natural-language questions about the dataset
+- Generate AI explanations and visualizations with Together AI and E2B
+- Use a clean, responsive Streamlit dashboard
+
 ## Project showcase
 
 Visit the GitHub Pages landing page:
@@ -12,6 +35,33 @@ Visit the GitHub Pages landing page:
 GitHub Pages hosts the project showcase. The interactive AI dashboard runs
 locally or on Streamlit Community Cloud because GitHub Pages cannot execute
 Python or Streamlit applications.
+
+## Demo
+
+Add your screen recording here as `docs/assets/vizly-demo.gif`:
+
+```markdown
+![Vizly demo](docs/assets/vizly-demo.gif)
+```
+
+Recommended GIF flow:
+
+1. Upload a CSV.
+2. Show the dataset metrics and quick chart.
+3. Enter a natural-language question.
+4. Show the AI interpretation and generated visualization.
+
+## Screenshots
+
+Add screenshots under `docs/assets/` and display them like this:
+
+```markdown
+![Vizly dashboard](docs/assets/dashboard.png)
+![Dataset explorer](docs/assets/data-explorer.png)
+![AI-generated insight](docs/assets/ai-insight.png)
+```
+
+Keep screenshots cropped to the app window and avoid including API keys.
 
 ## How to Run
 
