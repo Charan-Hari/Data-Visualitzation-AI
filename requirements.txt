@@ -1,5 +1,5 @@
-e2b-code-interpreter
-Pillow
-pandas
-streamlit
-together
+e2b-code-interpreter>=2.0,<3
+Pillow>=10,<13
+pandas>=2.0,<3
+streamlit>=1.40,<2
+together>=1.2,<2

@@ -1,0 +1,5 @@
+order_date,customer_segment,product,quantity,order_value
+2025-02-01,Consumer,Notebook,3,45
+2025-02-03,Business,Monitor,2,620
+2025-02-08,Consumer,Keyboard,4,180
+2025-02-10,Home Office,Desk,1,390

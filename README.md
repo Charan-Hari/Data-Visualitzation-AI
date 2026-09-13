@@ -13,6 +13,8 @@ Vizly helps people explore unfamiliar datasets without writing analysis code.
 It combines instant local profiling with AI-generated explanations and charts,
 so users can understand the shape of their data before asking deeper questions.
 
+Choose from 12 included sample datasets or upload your own CSV.
+
 ## Features
 
 - Upload and preview CSV datasets
@@ -81,6 +83,15 @@ Follow the steps below to set up and run the application:
 
    Enter your Together AI and E2B keys in the app sidebar. Keys are kept in
    Streamlit session state and are not written to the repository.
+
+## GitHub Pages troubleshooting
+
+The first Pages deployment may require one manual setting. Open
+**Settings → Pages**, choose **GitHub Actions** under **Build and deployment**,
+save, and re-run the **Deploy GitHub Pages** workflow. The site will then be
+available at:
+
+`https://charan-hari.github.io/Data-Visualitzation-AI/`
 
 ## What you can ask
 

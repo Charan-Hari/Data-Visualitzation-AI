@@ -1,0 +1,5 @@
+week,priority,ticket_type,tickets,resolution_hours
+Week 1,High,Billing,42,18
+Week 2,Low,How-to,86,7
+Week 3,Medium,Technical,64,12
+Week 4,High,Account,38,15

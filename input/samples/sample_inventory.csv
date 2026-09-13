@@ -1,0 +1,5 @@
+product,warehouse,stock_on_hand,reorder_point,unit_cost
+Notebook,East,420,180,8
+Monitor,West,86,40,310
+Keyboard,East,215,90,45
+Desk,South,34,25,390

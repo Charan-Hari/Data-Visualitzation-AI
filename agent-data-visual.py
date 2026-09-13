@@ -18,6 +18,20 @@ from e2b_code_interpreter import Sandbox
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 pattern = re.compile(r"```python\n(.*?)\n```", re.DOTALL)
+SAMPLE_DATASETS = {
+    "Sales performance": "sample_sales.csv",
+    "Marketing campaigns": "sample_marketing.csv",
+    "Student outcomes": "sample_students.csv",
+    "Weather observations": "sample_weather.csv",
+    "Flight operations": "sample_flights.csv",
+    "Movie ratings": "sample_movies.csv",
+    "Employee retention": "sample_employees.csv",
+    "Online orders": "sample_orders.csv",
+    "Health metrics": "sample_health.csv",
+    "Housing prices": "sample_housing.csv",
+    "Support tickets": "sample_support.csv",
+    "Inventory levels": "sample_inventory.csv",
+}
 
 def code_interpret(e2b_code_interpreter: Sandbox, code: str) -> Optional[List[Any]]:
     with st.spinner('Executing code in E2B sandbox...'):
@@ -333,9 +347,8 @@ def main():
         unsafe_allow_html=True,
     )
     data_source = st.radio("Data source", ["✨ Sample dataset", "📁 Upload a CSV"], horizontal=True)
-    sample_path = Path(__file__).parent / "input" / "sample_sales.csv"
+    sample_directory = Path(__file__).parent / "input" / "samples"
     uploaded_file = None
-    source_filename = sample_path.name
 
     if data_source == "📁 Upload a CSV":
         uploaded_file = st.file_uploader(
@@ -349,8 +362,11 @@ def main():
         source_filename = uploaded_file.name
         df = pd.read_csv(uploaded_file)
     else:
+        sample_name = st.selectbox("Choose a sample dataset", list(SAMPLE_DATASETS))
+        source_filename = SAMPLE_DATASETS[sample_name]
+        sample_path = sample_directory / source_filename
         df = pd.read_csv(sample_path)
-        st.success("Sample dataset loaded. Use the filters below to explore it.")
+        st.success(f"{sample_name} loaded. Use the filters below to explore it.")
 
     if not df.empty:
         df = apply_data_filters(df)
