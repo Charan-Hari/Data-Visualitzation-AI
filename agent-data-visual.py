@@ -87,10 +87,114 @@ def upload_dataset(code_interpreter: Sandbox, uploaded_file) -> str:
         raise error
 
 
+def apply_theme() -> None:
+    """Apply the visual language for the dashboard."""
+    st.set_page_config(
+        page_title="Vizly | AI Data Visualization",
+        page_icon="📊",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+        :root {
+            --ink: #172033;
+            --muted: #63708a;
+            --purple: #7657f6;
+            --purple-dark: #4e35c5;
+            --surface: #ffffff;
+            --line: #e8eaf2;
+        }
+        .stApp {
+            background: linear-gradient(135deg, #f7f8ff 0%, #f9fbff 48%, #f4f9f8 100%);
+            color: var(--ink);
+        }
+        [data-testid="stHeader"] { background: transparent; }
+        [data-testid="stSidebar"] {
+            background: #11182a;
+            border-right: 0;
+        }
+        [data-testid="stSidebar"] * { color: #e7e9f4; }
+        [data-testid="stSidebar"] input {
+            background: #202a42;
+            border-color: #394562;
+        }
+        [data-testid="stSidebar"] a { color: #bcb1ff; }
+        h1, h2, h3, p, label, .stMarkdown { font-family: 'DM Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; color: var(--ink); }
+        h1 { letter-spacing: -0.04em; }
+        .hero {
+            padding: 2.2rem 2.5rem 2rem;
+            border-radius: 28px;
+            background: radial-gradient(circle at 90% 10%, #9b8bff 0, transparent 35%),
+                        linear-gradient(115deg, #201558 0%, #4e35c5 52%, #7657f6 100%);
+            box-shadow: 0 18px 45px rgba(78, 53, 197, .22);
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+        .hero h1 { color: white; font-size: 2.8rem; margin: .35rem 0 .5rem; }
+        .hero p { color: #e4e0ff; font-size: 1.08rem; max-width: 680px; margin: 0; }
+        .eyebrow {
+            color: #c9c0ff; font-size: .76rem; font-weight: 700;
+            letter-spacing: .14em; text-transform: uppercase;
+        }
+        .section-title { margin: 1.3rem 0 .2rem; }
+        .section-subtitle { color: var(--muted); margin-bottom: 1rem; }
+        .metric-card {
+            background: var(--surface); border: 1px solid var(--line);
+            border-radius: 16px; padding: 1rem 1.1rem;
+            box-shadow: 0 8px 20px rgba(34, 42, 70, .05);
+        }
+        .metric-label { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+        .metric-value { color: var(--ink); font-family: 'Space Grotesk'; font-size: 1.45rem; font-weight: 700; margin-top: .25rem; }
+        .tip-card {
+            background: #f0edff; border: 1px solid #ddd7ff; border-radius: 14px;
+            padding: .9rem 1rem; color: #44368d; font-size: .9rem;
+        }
+        .stButton > button {
+            background: linear-gradient(100deg, var(--purple-dark), var(--purple));
+            color: white; border: 0; border-radius: 10px; font-weight: 700;
+            padding: .65rem 1.2rem; box-shadow: 0 8px 16px rgba(78, 53, 197, .18);
+        }
+        .stButton > button:hover { color: white; border: 0; filter: brightness(1.06); }
+        [data-testid="stFileUploader"] {
+            background: rgba(255,255,255,.75); border: 1px dashed #bcb8d9;
+            border-radius: 16px; padding: .5rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_hero() -> None:
+    st.markdown(
+        """
+        <div class="hero">
+            <div class="eyebrow">AI-powered data storytelling</div>
+            <h1>Turn raw data into clear decisions.</h1>
+            <p>Upload a CSV, ask a question in plain English, and let Vizly find the patterns and visualizations that matter.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_metric(label: str, value: str) -> None:
+    st.markdown(
+        f'<div class="metric-card"><div class="metric-label">{label}</div>'
+        f'<div class="metric-value">{value}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
 def main():
     """Main Streamlit application."""
-    st.title("📊 AI Data Visualization Agent")
-    st.write("Upload your dataset and ask questions about it!")
+    apply_theme()
+    render_hero()
 
     # Initialize session state variables
     if 'together_api_key' not in st.session_state:
@@ -101,15 +205,15 @@ def main():
         st.session_state.model_name = ''
 
     with st.sidebar:
-        st.header("API Keys and Model Configuration")
-        st.session_state.together_api_key = st.sidebar.text_input("Together AI API Key", type="password")
-        st.sidebar.info("💡 Everyone gets a free $1 credit by Together AI - AI Acceleration Cloud platform")
-        st.sidebar.markdown("[Get Together AI API Key](https://api.together.ai/signin)")
+        st.markdown("## ⚙️ Workspace")
+        st.caption("Connect your AI tools to start exploring.")
+        st.session_state.together_api_key = st.text_input("Together AI API Key", type="password")
+        st.info("Together AI includes free starter credit.")
+        st.markdown("[Get a Together AI key ↗](https://api.together.ai/signin)")
         
-        st.session_state.e2b_api_key = st.sidebar.text_input("Enter E2B API Key", type="password")
-        st.sidebar.markdown("[Get E2B API Key](https://e2b.dev/docs/legacy/getting-started/api-key)")
+        st.session_state.e2b_api_key = st.text_input("E2B API Key", type="password")
+        st.markdown("[Get an E2B key ↗](https://e2b.dev/docs/legacy/getting-started/api-key)")
         
-        # Add model selection dropdown
         model_options = {
             "Meta-Llama 3.1 405B": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
             "DeepSeek V3": "deepseek-ai/DeepSeek-V3",
@@ -122,24 +226,40 @@ def main():
             index=0  # Default to first option
         )
         st.session_state.model_name = model_options[st.session_state.model_name]
+        st.markdown("---")
+        st.caption("Your keys are used only for this session.")
 
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    st.markdown('<h2 class="section-title">1. Bring your data</h2>', unsafe_allow_html=True)
+    st.markdown('<div class="section-subtitle">Start with a CSV export from your spreadsheet, database, or product.</div>', unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("Drop a CSV here or browse your files", type="csv", label_visibility="collapsed")
     
     if uploaded_file is not None:
-        # Display dataset with toggle
         df = pd.read_csv(uploaded_file)
-        st.write("Dataset:")
-        show_full = st.checkbox("Show full dataset")
-        if show_full:
-            st.dataframe(df)
-        else:
-            st.write("Preview (first 5 rows):")
-            st.dataframe(df.head())
-        # Query input
-        query = st.text_area("What would you like to know about your data?",
-                            "Can you compare the average cost for two people between different categories?")
+        st.markdown(f"### 📄 {uploaded_file.name}")
+        metric_columns = st.columns(4)
+        with metric_columns[0]:
+            render_metric("Rows", f"{len(df):,}")
+        with metric_columns[1]:
+            render_metric("Columns", f"{len(df.columns):,}")
+        with metric_columns[2]:
+            render_metric("Numeric fields", f"{len(df.select_dtypes(include='number').columns):,}")
+        with metric_columns[3]:
+            render_metric("Missing values", f"{int(df.isna().sum().sum()):,}")
+
+        with st.expander("Preview your dataset", expanded=True):
+            st.dataframe(df.head(8), use_container_width=True, hide_index=True)
+            st.caption(f"Showing the first 8 rows of {len(df):,}.")
+
+        st.markdown('<h2 class="section-title">2. Ask your question</h2>', unsafe_allow_html=True)
+        st.markdown('<div class="section-subtitle">Describe the comparison, trend, or outlier you want to understand.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="tip-card">✨ Try: “Show the top 5 categories by average cost” or “What trend do you see over time?”</div>', unsafe_allow_html=True)
+        query = st.text_area(
+            "Question",
+            "Can you compare the average cost for two people between different categories?",
+            label_visibility="collapsed",
+        )
         
-        if st.button("Analyze"):
+        if st.button("✨ Generate insight", use_container_width=True):
             if not st.session_state.together_api_key or not st.session_state.e2b_api_key:
                 st.error("Please enter both API keys in the sidebar.")
             else:
@@ -150,12 +270,12 @@ def main():
                     # Pass dataset_path to chat_with_llm
                     code_results, llm_response = chat_with_llm(code_interpreter, query, dataset_path)
                     
-                    # Display LLM's text response
-                    st.write("AI Response:")
-                    st.write(llm_response)
+                    st.markdown('<h2 class="section-title">Your data story</h2>', unsafe_allow_html=True)
+                    st.markdown("### 💡 AI interpretation")
+                    st.info(llm_response)
                     
-                    # Display results/visualizations
                     if code_results:
+                        st.markdown("### 📈 Generated visuals")
                         for result in code_results:
                             if hasattr(result, 'png') and result.png:  # Check if PNG data is available
                                 # Decode the base64-encoded PNG data
@@ -163,7 +283,7 @@ def main():
                                 
                                 # Convert PNG data to an image and display it
                                 image = Image.open(BytesIO(png_data))
-                                st.image(image, caption="Generated Visualization", use_container_width=False)
+                                st.image(image, caption="Generated visualization", use_container_width=True)
                             elif hasattr(result, 'figure'):  # For matplotlib figures
                                 fig = result.figure  # Extract the matplotlib figure
                                 st.pyplot(fig)  # Display using st.pyplot
