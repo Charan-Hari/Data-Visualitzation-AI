@@ -6,10 +6,6 @@ with Together AI and E2B.
 
 > Upload your data. Ask a question. Discover the story.
 
-## Topics
-
-`python` `streamlit` `data-visualization` `data-analysis` `generative-ai`
-`llm` `pandas` `together-ai` `e2b` `ai-agent`
 
 ## Why Vizly?
 
