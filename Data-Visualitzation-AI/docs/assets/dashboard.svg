@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-label="Vizly dashboard preview">
+  <rect width="1200" height="700" rx="24" fill="#f7fbfa"/>
+  <rect width="220" height="700" rx="24" fill="#12333d"/>
+  <text x="32" y="58" fill="#fff" font-family="Arial" font-size="28" font-weight="700">vizly</text>
+  <text x="32" y="105" fill="#bde8e3" font-family="Arial" font-size="14">AI DATA WORKSPACE</text>
+  <rect x="32" y="145" width="156" height="42" rx="10" fill="#0c8b83"/>
+  <text x="52" y="172" fill="#fff" font-family="Arial" font-size="15" font-weight="700">New analysis</text>
+  <text x="32" y="245" fill="#a7c8c7" font-family="Arial" font-size="13">CONNECTED MODEL</text>
+  <text x="32" y="276" fill="#fff" font-family="Arial" font-size="15">DeepSeek V3</text>
+  <rect x="260" y="32" width="900" height="142" rx="22" fill="#126c6a"/>
+  <text x="296" y="72" fill="#c4f2ec" font-family="Arial" font-size="13" font-weight="700">AI-POWERED DATA STORYTELLING</text>
+  <text x="296" y="116" fill="#fff" font-family="Arial" font-size="34" font-weight="700">Turn raw data into clear decisions.</text>
+  <text x="296" y="148" fill="#d9f6f2" font-family="Arial" font-size="16">Upload a CSV, explore patterns, and ask questions in plain English.</text>
+  <g font-family="Arial">
+    <rect x="260" y="202" width="210" height="92" rx="14" fill="#fff" stroke="#dfebe9"/>
+    <rect x="490" y="202" width="210" height="92" rx="14" fill="#fff" stroke="#dfebe9"/>
+    <rect x="720" y="202" width="210" height="92" rx="14" fill="#fff" stroke="#dfebe9"/>
+    <rect x="950" y="202" width="210" height="92" rx="14" fill="#fff" stroke="#dfebe9"/>
+    <text x="282" y="231" fill="#60727a" font-size="12">ROWS</text><text x="282" y="272" fill="#152b35" font-size="28" font-weight="700">16</text>
+    <text x="512" y="231" fill="#60727a" font-size="12">COLUMNS</text><text x="512" y="272" fill="#152b35" font-size="28" font-weight="700">6</text>
+    <text x="742" y="231" fill="#60727a" font-size="12">NUMERIC FIELDS</text><text x="742" y="272" fill="#152b35" font-size="28" font-weight="700">3</text>
+    <text x="972" y="231" fill="#60727a" font-size="12">MISSING VALUES</text><text x="972" y="272" fill="#152b35" font-size="28" font-weight="700">0</text>
+  </g>
+  <rect x="260" y="324" width="560" height="320" rx="18" fill="#fff" stroke="#dfebe9"/>
+  <text x="292" y="364" fill="#152b35" font-family="Arial" font-size="20" font-weight="700">Revenue trend</text>
+  <polyline points="300,580 380,532 460,548 540,465 620,498 700,410 780,438" fill="none" stroke="#0c8b83" stroke-width="6"/>
+  <line x1="300" y1="580" x2="780" y2="580" stroke="#dce9e7"/>
+  <rect x="850" y="324" width="310" height="320" rx="18" fill="#fff" stroke="#dfebe9"/>
+  <text x="882" y="364" fill="#152b35" font-family="Arial" font-size="20" font-weight="700">AI interpretation</text>
+  <text x="882" y="410" fill="#60727a" font-family="Arial" font-size="15">Automation leads revenue</text>
+  <text x="882" y="438" fill="#60727a" font-family="Arial" font-size="15">with a steady upward trend.</text>
+  <circle cx="900" cy="500" r="8" fill="#ed765f"/><text x="920" y="506" fill="#152b35" font-family="Arial" font-size="14">Ask another question</text>
+</svg>

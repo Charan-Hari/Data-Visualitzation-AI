@@ -1,0 +1,5 @@
+flight,airline,route,delay_minutes,passengers
+VZ101,NorthAir,SEA-DEN,12,148
+VZ204,CloudJet,LAX-ORD,0,176
+VZ305,NorthAir,JFK-SFO,38,132
+VZ412,CloudJet,ATL-MIA,7,154

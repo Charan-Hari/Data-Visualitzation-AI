@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-label="Vizly data explorer preview">
+  <rect width="1200" height="620" rx="24" fill="#f7fbfa"/>
+  <text x="54" y="68" fill="#152b35" font-family="Arial" font-size="30" font-weight="700">Explore your data</text>
+  <text x="54" y="100" fill="#60727a" font-family="Arial" font-size="16">A quick visual health check before you ask AI.</text>
+  <rect x="54" y="140" width="350" height="100" rx="16" fill="#fff" stroke="#dfebe9"/>
+  <rect x="425" y="140" width="350" height="100" rx="16" fill="#fff" stroke="#dfebe9"/>
+  <rect x="796" y="140" width="350" height="100" rx="16" fill="#fff" stroke="#dfebe9"/>
+  <g font-family="Arial"><text x="78" y="175" fill="#60727a" font-size="13">COMPLETE CELLS</text><text x="78" y="215" fill="#152b35" font-size="30" font-weight="700">96</text>
+  <text x="449" y="175" fill="#60727a" font-size="13">UNIQUE VALUES</text><text x="449" y="215" fill="#152b35" font-size="30" font-weight="700">54</text>
+  <text x="820" y="175" fill="#60727a" font-size="13">DUPLICATE ROWS</text><text x="820" y="215" fill="#152b35" font-size="30" font-weight="700">0</text></g>
+  <rect x="54" y="276" width="700" height="288" rx="18" fill="#fff" stroke="#dfebe9"/>
+  <text x="84" y="316" fill="#152b35" font-family="Arial" font-size="20" font-weight="700">Average revenue by category</text>
+  <g fill="#ed765f"><rect x="110" y="450" width="90" height="74" rx="6"/><rect x="270" y="390" width="90" height="134" rx="6"/><rect x="430" y="348" width="90" height="176" rx="6"/></g>
+  <g fill="#60727a" font-family="Arial" font-size="14"><text x="112" y="548">Security</text><text x="270" y="548">Analytics</text><text x="438" y="548">Automation</text></g>
+  <rect x="800" y="276" width="346" height="288" rx="18" fill="#e8f7f4" stroke="#c7eae4"/>
+  <text x="830" y="322" fill="#155d5a" font-family="Arial" font-size="20" font-weight="700">🎛 Filters</text>
+  <rect x="830" y="350" width="286" height="44" rx="8" fill="#fff"/><text x="848" y="378" fill="#60727a" font-family="Arial" font-size="14">Category: All values</text>
+  <rect x="830" y="414" width="286" height="44" rx="8" fill="#fff"/><text x="848" y="442" fill="#60727a" font-family="Arial" font-size="14">Revenue: 1,000 - 4,500</text>
+  <text x="830" y="500" fill="#155d5a" font-family="Arial" font-size="14">Showing 16 of 16 rows</text>
+</svg>
