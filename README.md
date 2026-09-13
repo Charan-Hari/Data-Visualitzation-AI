@@ -25,6 +25,8 @@ Choose from 12 included sample datasets or upload your own CSV.
 - Get an automatic summary of trends, leaders, outliers, and data-quality issues
 - See suggested follow-up questions based on the dataset
 - Profile every column by type, completeness, and cardinality
+- GitHub Pages demo with real public datasets and Plotly-powered interactive charts
+- Automatic chart recommendations based on temporal, categorical, and quantitative fields
 - Generate instant trend, area, and grouped bar charts
 - Ask natural-language questions about the dataset
 - Generate AI explanations and visualizations with Together AI and E2B
@@ -63,6 +65,10 @@ Recommended GIF flow:
 ![Dataset explorer](docs/assets/data-explorer.svg)
 
 Keep screenshots cropped to the app window and avoid including API keys.
+
+The interactive demo uses public datasets from UCI, World Bank/DataHub, and
+FiveThirtyEight. See [docs/data/SOURCES.md](docs/data/SOURCES.md) for dataset
+links and attribution.
 
 ## How to Run
 
