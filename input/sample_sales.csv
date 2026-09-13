@@ -1,0 +1,17 @@
+date,region,category,units,revenue,customer_rating
+2025-01-05,North,Analytics,18,2160,4.6
+2025-01-12,South,Analytics,14,1680,4.2
+2025-01-19,East,Automation,22,3080,4.8
+2025-01-26,West,Security,11,1870,4.1
+2025-02-05,North,Automation,27,3780,4.9
+2025-02-12,South,Security,16,2720,4.4
+2025-02-19,East,Analytics,25,3000,4.7
+2025-02-26,West,Automation,19,2660,4.5
+2025-03-05,North,Security,21,3570,4.8
+2025-03-12,South,Analytics,24,2880,4.6
+2025-03-19,East,Automation,29,4060,4.9
+2025-03-26,West,Security,17,2890,4.3
+2025-04-05,North,Analytics,31,3720,4.8
+2025-04-12,South,Automation,26,3640,4.7
+2025-04-19,East,Security,23,3910,4.6
+2025-04-26,West,Analytics,28,3360,4.5

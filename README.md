@@ -38,11 +38,9 @@ Python or Streamlit applications.
 
 ## Demo
 
-Add your screen recording here as `docs/assets/vizly-demo.gif`:
+The workflow preview below shows the intended user journey:
 
-```markdown
-![Vizly demo](docs/assets/vizly-demo.gif)
-```
+![Vizly demo workflow](docs/assets/vizly-demo.gif)
 
 Recommended GIF flow:
 
@@ -53,13 +51,13 @@ Recommended GIF flow:
 
 ## Screenshots
 
-Add screenshots under `docs/assets/` and display them like this:
+### Dashboard
 
-```markdown
-![Vizly dashboard](docs/assets/dashboard.png)
-![Dataset explorer](docs/assets/data-explorer.png)
-![AI-generated insight](docs/assets/ai-insight.png)
-```
+![Vizly dashboard](docs/assets/dashboard.svg)
+
+### Dataset explorer
+
+![Dataset explorer](docs/assets/data-explorer.svg)
 
 Keep screenshots cropped to the app window and avoid including API keys.
 

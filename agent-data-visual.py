@@ -5,6 +5,7 @@ import sys
 import io
 import contextlib
 import warnings
+from pathlib import Path
 from typing import Optional, List, Any, Tuple
 from PIL import Image
 import streamlit as st
@@ -76,11 +77,11 @@ IMPORTANT: Always use the dataset path variable '{dataset_path}' in your code wh
             st.warning(f"Failed to match any Python code in model's response")
             return None, response_message.content
 
-def upload_dataset(code_interpreter: Sandbox, uploaded_file) -> str:
-    dataset_path = f"./{uploaded_file.name}"
+def upload_dataset(code_interpreter: Sandbox, filename: str, file_data: bytes) -> str:
+    dataset_path = f"./{Path(filename).name}"
     
     try:
-        code_interpreter.files.write(dataset_path, uploaded_file)
+        code_interpreter.files.write(dataset_path, file_data)
         return dataset_path
     except Exception as error:
         st.error(f"Error during file upload: {error}")
@@ -192,6 +193,49 @@ def render_metric(label: str, value: str) -> None:
     )
 
 
+def apply_data_filters(df: pd.DataFrame) -> pd.DataFrame:
+    """Apply lightweight filters so users can explore before using AI."""
+    filtered_df = df.copy()
+    categorical_columns = list(df.select_dtypes(include=["object", "category", "bool"]).columns)
+    numeric_columns = list(df.select_dtypes(include="number").columns)
+
+    if not categorical_columns and not numeric_columns:
+        return filtered_df
+
+    st.markdown("### 🎛️ Filter this dataset")
+    filter_columns = st.columns(2)
+    if categorical_columns:
+        with filter_columns[0]:
+            category = st.selectbox("Category field", ["None"] + categorical_columns)
+            if category != "None":
+                values = sorted(df[category].dropna().astype(str).unique().tolist())
+                selected_values = st.multiselect(
+                    f"Values in {category}",
+                    values,
+                    default=values,
+                )
+                filtered_df = filtered_df[filtered_df[category].astype(str).isin(selected_values)]
+
+    if numeric_columns:
+        with filter_columns[1]:
+            numeric_field = st.selectbox("Numeric field", ["None"] + numeric_columns)
+            if numeric_field != "None" and not filtered_df.empty:
+                numeric_values = pd.to_numeric(filtered_df[numeric_field], errors="coerce").dropna()
+                if not numeric_values.empty and numeric_values.min() < numeric_values.max():
+                    minimum, maximum = st.slider(
+                        f"Range for {numeric_field}",
+                        float(numeric_values.min()),
+                        float(numeric_values.max()),
+                        (float(numeric_values.min()), float(numeric_values.max())),
+                    )
+                    filtered_df = filtered_df[
+                        filtered_df[numeric_field].between(minimum, maximum, inclusive="both")
+                    ]
+
+    st.caption(f"Showing {len(filtered_df):,} of {len(df):,} rows.")
+    return filtered_df
+
+
 def render_dataset_explorer(df: pd.DataFrame) -> None:
     """Show useful local insights before the user spends an AI request."""
     numeric_columns = list(df.select_dtypes(include="number").columns)
@@ -283,13 +327,37 @@ def main():
         st.markdown("---")
         st.caption("Your keys are used only for this session.")
 
-    st.markdown('<h2 class="section-title">1. Bring your data</h2>', unsafe_allow_html=True)
-    st.markdown('<div class="section-subtitle">Start with a CSV export from your spreadsheet, database, or product.</div>', unsafe_allow_html=True)
-    uploaded_file = st.file_uploader("Drop a CSV here or browse your files", type="csv", label_visibility="collapsed")
-    
-    if uploaded_file is not None:
+    st.markdown('<h2 class="section-title">1. Start exploring</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-subtitle">Try the included sample dataset instantly, or bring your own CSV.</div>',
+        unsafe_allow_html=True,
+    )
+    data_source = st.radio("Data source", ["✨ Sample dataset", "📁 Upload a CSV"], horizontal=True)
+    sample_path = Path(__file__).parent / "input" / "sample_sales.csv"
+    uploaded_file = None
+    source_filename = sample_path.name
+
+    if data_source == "📁 Upload a CSV":
+        uploaded_file = st.file_uploader(
+            "Drop a CSV here or browse your files",
+            type="csv",
+            label_visibility="collapsed",
+        )
+        if uploaded_file is None:
+            st.info("Choose a CSV to continue, or switch back to the sample dataset.")
+            return
+        source_filename = uploaded_file.name
         df = pd.read_csv(uploaded_file)
-        st.markdown(f"### 📄 {uploaded_file.name}")
+    else:
+        df = pd.read_csv(sample_path)
+        st.success("Sample dataset loaded. Use the filters below to explore it.")
+
+    if not df.empty:
+        df = apply_data_filters(df)
+        if df.empty:
+            st.warning("No rows match the selected filters. Adjust the filters to continue.")
+            return
+        st.markdown(f"### 📄 {source_filename}")
         metric_columns = st.columns(4)
         with metric_columns[0]:
             render_metric("Rows", f"{len(df):,}")
@@ -319,8 +387,8 @@ def main():
                 st.error("Please enter both API keys in the sidebar.")
             else:
                 with Sandbox(api_key=st.session_state.e2b_api_key) as code_interpreter:
-                    # Upload the dataset
-                    dataset_path = upload_dataset(code_interpreter, uploaded_file)
+                    dataset_bytes = df.to_csv(index=False).encode("utf-8")
+                    dataset_path = upload_dataset(code_interpreter, source_filename, dataset_bytes)
                     
                     # Pass dataset_path to chat_with_llm
                     code_results, llm_response = chat_with_llm(code_interpreter, query, dataset_path)
